@@ -1,7 +1,5 @@
 # Lint and test VERDY on every push and pull request, on each supported Python version.
 # The tests stub every web service (ENA, OLS4, GBIF, Wikidata, CF, EEA), so they need no network or keys.
-# When a GitHub release is published, the tested package is also built and uploaded to PyPI
-# through trusted publishing (no password or token stored): PyPI accepts uploads from this file.
 
 name: Python package
 
@@ -10,8 +8,6 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  release:
-    types: [ published ]
 
 permissions:
   contents: read
@@ -49,38 +45,3 @@ jobs:
     - name: Command line works
       run: |
         verdy --list
-
-  dist:
-    if: github.event_name == 'release'
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.12"
-    - name: Build the package
-      run: |
-        python -m pip install --upgrade pip build twine
-        python -m build
-        twine check dist/*
-    - uses: actions/upload-artifact@v4
-      with:
-        name: dist
-        path: dist/
-
-  publish:
-    if: github.event_name == 'release'
-    needs: dist
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/verdy
-    permissions:
-      id-token: write          # lets PyPI verify this upload comes from this repository and workflow
-    steps:
-    - uses: actions/download-artifact@v4
-      with:
-        name: dist
-        path: dist/
-    - uses: pypa/gh-action-pypi-publish@release/v1
