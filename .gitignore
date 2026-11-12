@@ -5,3 +5,4 @@ reviews/
 build/
 dist/
 .venv/
+.DS_Store

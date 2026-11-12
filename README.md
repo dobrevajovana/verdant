@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.svg" width="160" alt="verdant logo: an old tree with spectacles, a moustache and a green coat"></p>
+<p align="center"><img src="logo.png" width="200" alt="verdant logo: an old tree gentleman with round spectacles, a moss moustache, a leafy crown with linked fruit, and a green suit"></p>
 
 # verdant
 
