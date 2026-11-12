@@ -1,6 +1,6 @@
-<p align="center"><img src="logo.png" width="200" alt="verdant logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
+<p align="center"><img src="logo.png" width="200" alt="verdy logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
 
-# verdant
+# verdy
 
 **Predict matches for your ENA IDs or free-text terms in the ontologies you choose.**
 
@@ -10,28 +10,28 @@
 4. **Output:** a file with the exact match, or the most closely related terms, per name and ontology.
 
 ```python
-import verdant
+import verdy
 
-matches = verdant.match("my_input.csv", ontologies=["natura2000", "gold", "envo", "ncbitaxon"])
-verdant.save(matches, "my_input.matches.csv")      # .csv  .tsv  .sssom.tsv  .json  .xlsx
+matches = verdy.match("my_input.csv", ontologies=["natura2000", "gold", "envo", "ncbitaxon"])
+verdy.save(matches, "my_input.matches.csv")      # .csv  .tsv  .sssom.tsv  .json  .xlsx
 ```
 
 ```
-verdant my_input.csv -o natura2000,gold,envo --out my_input.matches.csv
+verdy my_input.csv -o natura2000,gold,envo --out my_input.matches.csv
 ```
 
 ## Install
 
 ```
-pip install git+https://github.com/dobrevajovana/verdant.git
-pip install "verdant[excel] @ git+https://github.com/dobrevajovana/verdant.git"    # to read and write Excel
+pip install git+https://github.com/dobrevajovana/verdy.git
+pip install "verdy[excel] @ git+https://github.com/dobrevajovana/verdy.git"    # to read and write Excel
 ```
 
 Python 3.10 or newer; the only dependency is `requests`.
 
 ## Input
 
-`verdant.match` takes a CSV / TSV / Excel file, a text file with one value per line, a Python list or a pandas DataFrame.
+`verdy.match` takes a CSV / TSV / Excel file, a text file with one value per line, a Python list or a pandas DataFrame.
 The column is found by its header (`name`, `term`, `parameter`, `species`, ..., or `id`, `accession`, `sample_accession`, `run_accession`)
 or given with `column="..."`. One file can mix both kinds of value:
 
@@ -43,11 +43,11 @@ or given with `column="..."`. One file can mix both kinds of value:
 | anything else | free text, searched as it is (units in brackets, underscores and a leading code are set aside) |
 
 `fields=` chooses other ENA sample fields to search (see ENA's `returnFields?result=sample`).
-After a run, `verdant.match.unresolved` lists the IDs ENA did not know.
+After a run, `verdy.match.unresolved` lists the IDs ENA did not know.
 
 ## The ontologies
 
-`verdant.ONTOLOGIES` (or `verdant --list`):
+`verdy.ONTOLOGIES` (or `verdy --list`):
 
 | ID | What | For |
 |---|---|---|
@@ -85,9 +85,9 @@ One row per match:
 How the search works:
 * At most `per_ontology` matches (default 3) per term and ontology. When there is an exact match, only that one is given.
 * In the taxonomies (NCBITaxon, GBIF), only exact names count, because a near name is another taxon.
-* `verdant.unmatched(terms, matches, ontologies)` lists, per ontology, the terms it found nothing for.
+* `verdy.unmatched(terms, matches, ontologies)` lists, per ontology, the terms it found nothing for.
 
-Every answer (ENA, OLS4, GBIF, Wikidata, the CF table, the Natura 2000 lists) is cached in `~/.cache/verdant` (or `VERDANT_CACHE`), so a second run makes no requests.
+Every answer (ENA, OLS4, GBIF, Wikidata, the CF table, the Natura 2000 lists) is cached in `~/.cache/verdy` (or `VERDY_CACHE`), so a second run makes no requests.
 
 ## Example
 
@@ -110,10 +110,10 @@ Natura 2000, GOLD, ENVO, NCBITaxon, PATO and CF. It writes [examples/input.match
 ## One term at a time
 
 ```python
-verdant.search("cloud liquid water content", "cf")    # the source's best terms, best first
-verdant.resolve("SAMD00132352")                      # what ENA says about an ID
-verdant.read_terms("my_input.csv")                    # what verdant read from your file
-verdant.to_dataframe(matches)                         # pandas
+verdy.search("cloud liquid water content", "cf")    # the source's best terms, best first
+verdy.resolve("SAMD00132352")                      # what ENA says about an ID
+verdy.read_terms("my_input.csv")                    # what verdy read from your file
+verdy.to_dataframe(matches)                         # pandas
 ```
 
 ## Tests

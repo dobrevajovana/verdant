@@ -1,8 +1,8 @@
-"""Command line:  verdant TERMS -o envo,pato,cf [--column NAME] [--out FILE]
+"""Command line:  verdy TERMS -o envo,pato,cf [--column NAME] [--out FILE]
 
-    verdant my_terms.csv -o envo,ncbitaxon,gbif --out my_terms.matches.csv
-    verdant my_terms.csv -o pato,cf,uo                       # print a table instead
-    verdant --list                                           # the ready ontologies
+    verdy my_terms.csv -o envo,ncbitaxon,gbif --out my_terms.matches.csv
+    verdy my_terms.csv -o pato,cf,uo                       # print a table instead
+    verdy --list                                           # the ready ontologies
 """
 
 from __future__ import annotations
@@ -11,13 +11,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from verdant.match import match, read_terms, resolve_terms, unmatched
-from verdant.output import save, to_table
-from verdant.sources import ONTOLOGIES
+from verdy.match import match, read_terms, resolve_terms, unmatched
+from verdy.output import save, to_table
+from verdy.sources import ONTOLOGIES
 
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="verdant", description="Match your terms to the ontologies you choose.")
+    ap = argparse.ArgumentParser(prog="verdy", description="Match your terms to the ontologies you choose.")
     ap.add_argument("terms", nargs="?", help="CSV / TSV / Excel with an ID or name column, or a text file with one per line")
     ap.add_argument("-o", "--ontologies", help="comma-separated IDs: see --list; any OLS4 ontology ID works too")
     ap.add_argument("--column", help="the column holding the terms (found by its header otherwise)")

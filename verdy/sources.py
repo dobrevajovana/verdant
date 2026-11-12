@@ -14,7 +14,7 @@ ontology ID works too (https://www.ebi.ac.uk/ols4/ontologies).
 * ``cf``: the CF Standard Names table (climate and forecast variables), read once and
   searched locally.
 
-Every answer is cached on disk (``VERDANT_CACHE``, default ``~/.cache/verdant``), so a
+Every answer is cached on disk (``VERDY_CACHE``, default ``~/.cache/verdy``), so a
 second run on the same names makes no requests.
 """
 
@@ -31,10 +31,10 @@ from pathlib import Path
 
 import requests
 
-logger = logging.getLogger("verdant")
+logger = logging.getLogger("verdy")
 
-CACHE = Path(os.environ.get("VERDANT_CACHE", Path.home() / ".cache" / "verdant"))
-UA = {"User-Agent": "verdant/0.1 (ontology matcher)"}
+CACHE = Path(os.environ.get("VERDY_CACHE", Path.home() / ".cache" / "verdy"))
+UA = {"User-Agent": "verdy/0.1 (ontology matcher)"}
 OLS = "https://www.ebi.ac.uk/ols4/api"
 CF_TABLE = "https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml"
 

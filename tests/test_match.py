@@ -1,4 +1,4 @@
-"""verdant.match with every web service stubbed.
+"""verdy.match with every web service stubbed.
 
 Run:  python -m pytest -q
 """
@@ -8,8 +8,8 @@ import json
 
 import pytest
 
-import verdant
-from verdant import sources
+import verdy
+from verdy import sources
 
 ENVO = "http://purl.obolibrary.org/obo/ENVO_"
 TAXON = "http://purl.obolibrary.org/obo/NCBITaxon_"
@@ -80,17 +80,17 @@ def test_read_terms_from_many_inputs(tmp_path):
     (tmp_path / "a.csv").write_text("id,Parameter,group\nx1,air temperature (°C),parameter\nx2,Estuaries,habitat\nx2,again,habitat\n")
     (tmp_path / "b.txt").write_text("Lynx lynx\n\nEstuaries\n")
     (tmp_path / "c.tsv").write_text("code\tlabel\n1130\tEstuaries\n")
-    assert verdant.read_terms(tmp_path / "a.csv") == [
+    assert verdy.read_terms(tmp_path / "a.csv") == [
         {"id": "x1", "label": "air temperature (°C)", "category": "parameter"}, {"id": "x2", "label": "Estuaries", "category": "habitat"}]
-    assert [t["label"] for t in verdant.read_terms(tmp_path / "b.txt")] == ["Lynx lynx", "Estuaries"]
-    assert verdant.read_terms(tmp_path / "c.tsv")[0] == {"id": "1130", "label": "Estuaries", "category": None}
-    assert [t["id"] for t in verdant.read_terms(["Lynx lynx", {"name": "Coastal lagoons"}])] == ["lynx_lynx", "coastal_lagoons"]
+    assert [t["label"] for t in verdy.read_terms(tmp_path / "b.txt")] == ["Lynx lynx", "Estuaries"]
+    assert verdy.read_terms(tmp_path / "c.tsv")[0] == {"id": "1130", "label": "Estuaries", "category": None}
+    assert [t["id"] for t in verdy.read_terms(["Lynx lynx", {"name": "Coastal lagoons"}])] == ["lynx_lynx", "coastal_lagoons"]
     with pytest.raises(ValueError):
-        verdant.read_terms(tmp_path / "a.csv", column="nope")
+        verdy.read_terms(tmp_path / "a.csv", column="nope")
 
 
 def test_only_the_chosen_ontologies(services):
-    ms = verdant.match(["Lynx lynx", "Estuaries", "Coastal lagoons"], ["envo"])
+    ms = verdy.match(["Lynx lynx", "Estuaries", "Coastal lagoons"], ["envo"])
     assert {m["ontology"] for m in ms} == {"ENVO"}
     by = {(m["term"], m["match_label"]): m for m in ms}
     assert by[("Estuaries", "estuary")]["match_type"] == "skos:exactMatch"            # plural aside
@@ -100,18 +100,18 @@ def test_only_the_chosen_ontologies(services):
 
 
 def test_taxonomies_take_exact_names_only(services):
-    ms = verdant.match(["Lynx lynx", "Estuaries"], "ncbitaxon, gbif, wikidata")
+    ms = verdy.match(["Lynx lynx", "Estuaries"], "ncbitaxon, gbif, wikidata")
     got = {(m["term"], m["ontology"]): m for m in ms}
     assert got[("Lynx lynx", "NCBITaxon")]["match_curie"] == "NCBITaxon:13125"
     assert got[("Lynx lynx", "GBIF")]["match_curie"] == "GBIF:2435240"
     assert got[("Lynx lynx", "Wikidata")]["match_type"] == "skos:exactMatch"          # by its alias
     assert ("Estuaries", "NCBITaxon") not in got                                     # 'estuaries bacterium' is not it
     assert ("Estuaries", "Wikidata") not in got                                      # an alias alone is no near match
-    assert verdant.unmatched(["Lynx lynx", "Estuaries"], ms, "ncbitaxon,gbif") == {"ncbitaxon": ["Estuaries"], "gbif": ["Estuaries"]}
+    assert verdy.unmatched(["Lynx lynx", "Estuaries"], ms, "ncbitaxon,gbif") == {"ncbitaxon": ["Estuaries"], "gbif": ["Estuaries"]}
 
 
 def test_parameters_in_cf_and_pato(services):
-    ms = verdant.match(["air temperature [K]", "wind speed", "surface air temperature"], ["cf", "pato"])
+    ms = verdy.match(["air temperature [K]", "wind speed", "surface air temperature"], ["cf", "pato"])
     got = {(m["term"], m["ontology"], m["match_curie"]): m["match_type"] for m in ms}
     assert got[("air temperature [K]", "CF", "CF:air_temperature")] == "skos:exactMatch"      # units in brackets aside
     assert got[("surface air temperature", "CF", "CF:air_temperature")] == "skos:exactMatch"  # a CF alias
@@ -121,7 +121,7 @@ def test_parameters_in_cf_and_pato(services):
 
 
 def test_leading_codes_units_and_underscores():
-    from verdant.sources import query_text
+    from verdy.sources import query_text
     assert query_text("1330 Atlantic salt meadows") == "Atlantic salt meadows"
     assert query_text("air temperature [K]") == "air temperature" and query_text("air_temperature") == "air temperature"
     assert query_text("16S rRNA gene") == "16S rRNA gene"
@@ -129,15 +129,15 @@ def test_leading_codes_units_and_underscores():
 
 def test_unknown_or_no_ontology(services):
     with pytest.raises(ValueError, match="nosuch"):
-        verdant.match(["Lynx lynx"], ["nosuch"])
+        verdy.match(["Lynx lynx"], ["nosuch"])
     with pytest.raises(ValueError):
-        verdant.match(["Lynx lynx"], [])
+        verdy.match(["Lynx lynx"], [])
 
 
 def test_outputs(services, tmp_path):
-    ms = verdant.match(["Lynx lynx", "Estuaries"], ["envo", "ncbitaxon"])
+    ms = verdy.match(["Lynx lynx", "Estuaries"], ["envo", "ncbitaxon"])
     for f in ("m.csv", "m.tsv", "m.json", "m.sssom.tsv"):
-        verdant.save(ms, tmp_path / f)
+        verdy.save(ms, tmp_path / f)
     rows = list(csv.DictReader(open(tmp_path / "m.csv")))
     assert {r["match_curie"] for r in rows} == {"ENVO:00000045", "NCBITaxon:13125"}
     assert json.loads((tmp_path / "m.json").read_text()) == ms
@@ -146,14 +146,14 @@ def test_outputs(services, tmp_path):
 
 
 def test_cache_makes_no_second_request(services):
-    verdant.match(["Estuaries"], ["envo"])
+    verdy.match(["Estuaries"], ["envo"])
     n = len(services)
-    verdant.match(["Estuaries"], ["envo"])
+    verdy.match(["Estuaries"], ["envo"])
     assert len(services) == n
 
 
 def test_command_line(services, tmp_path, capsys):
-    from verdant.__main__ import main
+    from verdy.__main__ import main
     (tmp_path / "n.csv").write_text("name\nLynx lynx\nEstuaries\n")
     assert main(["--list"]) == 0 and "ncbitaxon" in capsys.readouterr().out
     assert main([str(tmp_path / "n.csv"), "-o", "envo,ncbitaxon", "--out", str(tmp_path / "o.csv")]) == 0
@@ -164,7 +164,7 @@ def test_command_line(services, tmp_path, capsys):
 
 def test_ids_are_looked_up_in_ena_and_the_ontologies(services):
     import importlib
-    r = importlib.import_module("verdant.resolve")
+    r = importlib.import_module("verdy.resolve")
     assert [r.kind(x) for x in ("SAMD1", "ERS1", "ERR1", "PRJEB1", "ENVO:00000045", "air")] == \
         ["sample", "sample", "run", "project", "name", "name"]
     assert r.resolve("SAMD1") == [("scientific_name", "air metagenome"), ("broad_scale_environmental_context", "urban biome"),
@@ -176,19 +176,19 @@ def test_ids_are_looked_up_in_ena_and_the_ontologies(services):
 
 def test_ids_in_predictions_out(services, tmp_path):
     (tmp_path / "ids.csv").write_text("sample_accession\nSAMD1\nEstuaries\nPRJEB1\nSAMD999\n")
-    ms = verdant.match(tmp_path / "ids.csv", ["envo", "gold", "natura2000"])
+    ms = verdy.match(tmp_path / "ids.csv", ["envo", "gold", "natura2000"])
     rows = {(m["term_id"], m["term"], m["ontology"], m["match_curie"] or m["match_id"]): m for m in ms}
     air = rows[("SAMD1", "air", "ENVO", "ENVO:00002005")]
     assert air["category"] == "local_environmental_context|environmental_medium" and air["match_type"] == "skos:exactMatch"
     assert ("SAMD1", "urban biome", "ENVO", "ENVO:01000249") in rows
     assert any(k[0] == "SAMD1" and k[2] == "GOLD" and "Air" in rows[k]["match_label"] for k in rows)   # GOLD kept
     assert rows[("estuaries", "Estuaries", "Natura2000", "n2k:1130")]["match_type"] == "skos:exactMatch"
-    assert verdant.match.unresolved == ["SAMD999"]
+    assert verdy.match.unresolved == ["SAMD999"]
     assert not any(m["term_id"] == "PRJEB1" for m in ms)            # a project's rows carry its samples' IDs
 
 
 def test_free_text_and_ena_ids_together(services):
-    ms = verdant.match(["SAMD1", "Estuaries"], ["envo"])
+    ms = verdy.match(["SAMD1", "Estuaries"], ["envo"])
     assert {(m["term_id"], m["term"]) for m in ms} >= {("SAMD1", "air"), ("SAMD1", "urban biome"), ("estuaries", "Estuaries")}
-    sssom = verdant.to_sssom(ms)
+    sssom = verdy.to_sssom(ms)
     assert "biosample:SAMD1\t" in sssom and "term:estuaries" in sssom

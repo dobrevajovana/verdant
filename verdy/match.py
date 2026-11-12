@@ -1,8 +1,8 @@
 """Predict matches for your IDs or terms in the ontologies you choose.
 
-    import verdant
-    matches = verdant.match("my_samples.csv", ontologies=["natura2000", "gold", "envo"])
-    verdant.save(matches, "my_samples.matches.csv")
+    import verdy
+    matches = verdy.match("my_samples.csv", ontologies=["natura2000", "gold", "envo"])
+    verdy.save(matches, "my_samples.matches.csv")
 
 1. An ENA ID (sample, run or project) is looked up in ENA for its sample's organism
    (scientific_name), broad_scale_environmental_context, local_environmental_context,
@@ -25,8 +25,8 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from verdant.resolve import SAMPLE_FIELDS, kind, resolve
-from verdant.sources import TAXONOMIES, ontology_info, query_text, search
+from verdy.resolve import SAMPLE_FIELDS, kind, resolve
+from verdy.sources import TAXONOMIES, ontology_info, query_text, search
 
 NAME_COLUMNS = ("name", "label", "term", "parameter", "measurement", "variable", "scientific_name", "scientificname",
                 "species", "taxon", "habitat", "biome", "text", "value", "description")
@@ -157,7 +157,7 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
     came from), match_type, ontology, match_id, match_curie, match_label, confidence,
     word_overlap, rank, definition, searched_for.
 
-    ``ontologies``: a list or a comma-separated string of IDs (``verdant.ONTOLOGIES`` or any
+    ``ontologies``: a list or a comma-separated string of IDs (``verdy.ONTOLOGIES`` or any
     OLS4 ontology). ``fields``: which ENA sample fields to search for a sample, run or project.
     ``progress(done, total)`` is called as names are looked up. IDs nothing was found for
     are in ``match.unresolved`` after the call."""
@@ -171,7 +171,7 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
     for o in chosen:
         info = ontology_info(o)
         if info is None:
-            raise ValueError(f"Unknown ontology “{o}”: use one of verdant.ONTOLOGIES or an OLS4 ontology ID.")
+            raise ValueError(f"Unknown ontology “{o}”: use one of verdy.ONTOLOGIES or an OLS4 ontology ID.")
         shorts[o] = info["short"]
 
     tasks = [(t, o) for o in chosen for t in terms]
