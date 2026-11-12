@@ -52,31 +52,6 @@ or given with `column="..."`. One file can mix both kinds of value:
 `fields=` chooses other ENA sample fields to search (see ENA's `returnFields?result=sample`).
 After a run, `verdy.match.unresolved` lists the IDs ENA did not know.
 
-## How it works
-
-```
-input file (ENA IDs and/or free text)
-        │
-        ▼
-ENA ID?  ──yes──►  ENA Portal API: sample fields (organism, environment, host, ...)
-        │                                   │
-        no (free text)                      │
-        ▼                                   ▼
-clean the names (units, underscores, codes, plurals)
-        │
-        ▼
-search each chosen ontology: OLS4 · GBIF · Wikidata · CF Standard Names · Natura 2000
-        │
-        ▼
-score: words shared with each term's label and synonyms (0–1)
-        │
-        ▼
-keep: exactMatch, else up to 3 closeMatch / relatedMatch
-        │
-        ▼
-output file (CSV · TSV · SSSOM · JSON · Excel)
-```
-
 ## The ontologies
 
 `verdy.ONTOLOGIES` (or `verdy --list`):
