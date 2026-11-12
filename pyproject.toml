@@ -21,7 +21,7 @@ Issues = "https://github.com/dobrevajovana/verdy/issues"
 [project.optional-dependencies]
 excel = ["pandas>=2.0", "openpyxl>=3.1"]
 embeddings = ["sentence-transformers>=2.2.2"]
-test = ["pytest>=7"]
+test = ["pytest>=7", "numpy"]
 
 [project.scripts]
 verdy = "verdy.__main__:main"
