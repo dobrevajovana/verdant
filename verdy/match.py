@@ -173,7 +173,7 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
     ``ontologies``: a list or a comma-separated string of IDs (``verdy.ONTOLOGIES`` or any
     OLS4 ontology). ``embeddings``: also compare by cosine similarity of SentenceTransformers
     embeddings (default: when ``verdy[embeddings]`` is installed); ``min_cosine``: the least
-    cosine similarity for a match kept on embeddings (default 0.70; 0.80 or more is a
+    cosine similarity for a match kept on embeddings (default 0.60; 0.80 or more is a
     closeMatch); ``model`` names the model (default all-MiniLM-L6-v2). ``fields``: which ENA sample fields to search for a sample,
     run or project. ``progress(done, total)`` is called as names are looked up. IDs nothing
     was found for are in ``match.unresolved`` after the call."""

@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 
 MODEL = os.environ.get("VERDY_EMBEDDING_MODEL", "all-MiniLM-L6-v2")
-MIN_COSINE = 0.70     # least cosine for a match kept on embedding similarity (match(min_cosine=...))
+MIN_COSINE = 0.60     # least cosine for a match kept on embedding similarity (match(min_cosine=...))
 CLOSE = 0.80          # cosine for a closeMatch
 
 _models: dict = {}
