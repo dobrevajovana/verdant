@@ -2,6 +2,8 @@
 
 # VERDY
 
+[![Python package](https://github.com/dobrevajovana/verdy/actions/workflows/python-package.yml/badge.svg)](https://github.com/dobrevajovana/verdy/actions/workflows/python-package.yml)
+
 *Part of **VERDANT**: **V**ocabulary **E**nrichment & **R**esolution of **D**iversity **A**nnotations via **N**eural **T**echnology
 (BioHackathon Europe 2026).*
 

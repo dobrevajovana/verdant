@@ -1,0 +1,47 @@
+# Lint and test VERDY on every push and pull request, on each supported Python version.
+# The tests stub every web service (ENA, OLS4, GBIF, Wikidata, CF, EEA), so they need no network or keys.
+
+name: Python package
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: pip
+    - name: Install VERDY with its test dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install flake8
+        python -m pip install -e ".[test]"
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # everything else is reported as a warning only
+        flake8 . --count --exit-zero --max-complexity=15 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest -q
+    - name: Command line works
+      run: |
+        verdy --list
