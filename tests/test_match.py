@@ -215,6 +215,8 @@ def test_embeddings_rank_by_cosine(services, monkeypatch):
     assert next(m for m in ms if m["term"] == "Estuaries")["match_type"] == "skos:exactMatch"
     lynx = next(m for m in ms if m["term"] == "Lynx lynx")
     assert lynx["ontology"] == "NCBITaxon" and lynx["cosine"] is None      # taxonomies: exact names only
+    strict = verdy.match(["Coastal lagoons"], ["envo"], min_cosine=0.95)
+    assert strict[0]["match_label"] == "lagoon" and strict[0]["match_type"] == "skos:relatedMatch"   # kept on words only
     words = verdy.match(["Coastal lagoons"], ["envo"], embeddings=False)
     assert words[0]["cosine"] is None and words[0]["match_type"] == "skos:relatedMatch"
 

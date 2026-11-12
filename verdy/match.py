@@ -131,7 +131,7 @@ def _ontologies(ontologies) -> list[str]:
 
 
 def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontology: int, min_score: float,
-             cos: list[float] | None = None) -> list[dict]:
+             cos: list[float] | None = None, min_cosine: float = embed.MIN_COSINE) -> list[dict]:
     """Pick and type the matches. Words decide exact matches; with embeddings, cosine
     similarity also ranks the others and can admit a term that shares no word with the name."""
     if cos is not None:
@@ -141,7 +141,7 @@ def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontolo
     if ontology in TAXONOMIES or exact:
         chosen = exact[:1]
     elif cos is not None:
-        keep = [h for h in hits if h["cosine"] >= embed.RELATED or h["score"] >= min_score]
+        keep = [h for h in hits if h["cosine"] >= min_cosine or h["score"] >= min_score]
         chosen = sorted(keep, key=lambda h: -max(h["cosine"], h["score"]))[:per_ontology]
     else:
         chosen = [h for h in hits if h["score"] >= min_score][:per_ontology]
@@ -150,7 +150,7 @@ def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontolo
         c = h.get("cosine")
         if h["exact"]:
             kind, conf = "skos:exactMatch", 1.0 if h["same"] else 0.95
-        elif h["score"] >= 0.6 or (c is not None and c >= embed.CLOSE):
+        elif h["score"] >= 0.6 or (c is not None and c >= max(embed.CLOSE, min_cosine)):
             kind, conf = "skos:closeMatch", round(max(0.5 + 0.4 * h["score"], c or 0), 3)
         else:
             kind, conf = "skos:relatedMatch", round(max(0.3 + 0.4 * h["score"], c or 0), 3)
@@ -162,7 +162,8 @@ def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontolo
 
 
 def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3, min_score: float = 0.34,
-          embeddings: bool | None = None, model: str | None = None, fields=SAMPLE_FIELDS, progress=None,
+          embeddings: bool | None = None, min_cosine: float = embed.MIN_COSINE, model: str | None = None,
+          fields=SAMPLE_FIELDS, progress=None,
           workers: int = 6) -> list[dict]:
     """Matches for every ID or term in ``data`` in each of ``ontologies``: one dict per match
     with term_id (your ID, or the term), term (the name searched), category (the field it
@@ -171,8 +172,9 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
 
     ``ontologies``: a list or a comma-separated string of IDs (``verdy.ONTOLOGIES`` or any
     OLS4 ontology). ``embeddings``: also compare by cosine similarity of SentenceTransformers
-    embeddings (default: when ``verdy[embeddings]`` is installed); ``model`` names the model
-    (default all-MiniLM-L6-v2). ``fields``: which ENA sample fields to search for a sample,
+    embeddings (default: when ``verdy[embeddings]`` is installed); ``min_cosine``: the least
+    cosine similarity for a match kept on embeddings (default 0.70; 0.80 or more is a
+    closeMatch); ``model`` names the model (default all-MiniLM-L6-v2). ``fields``: which ENA sample fields to search for a sample,
     run or project. ``progress(done, total)`` is called as names are looked up. IDs nothing
     was found for are in ``match.unresolved`` after the call."""
     chosen = _ontologies(ontologies)
@@ -212,7 +214,7 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
 
     out = []
     for i, (t, o, hits) in enumerate(found):
-        out.extend(_matches(t, o, shorts[o], hits, per_ontology, min_score, cos.get(i)))
+        out.extend(_matches(t, o, shorts[o], hits, per_ontology, min_score, cos.get(i), min_cosine))
     return out
 
 

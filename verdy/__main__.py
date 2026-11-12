@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     ap.add_argument("--min-score", type=float, default=0.34, help="least word overlap for a related match (0.34)")
     ap.add_argument("--embeddings", action=argparse.BooleanOptionalAction, default=None,
                     help="also compare by embedding cosine similarity (default: when verdy[embeddings] is installed)")
+    ap.add_argument("--min-cosine", type=float, default=0.70,
+                    help="least embedding cosine similarity for a match (0.70); 0.80 or more is a closeMatch")
     ap.add_argument("--model", help="SentenceTransformers model for --embeddings (default all-MiniLM-L6-v2)")
     ap.add_argument("--list", action="store_true", help="list the ready ontologies")
     args = ap.parse_args(argv)
@@ -38,7 +40,7 @@ def main(argv=None) -> int:
     try:
         terms = read_terms(args.terms, args.column)
         matches = match(terms, args.ontologies, per_ontology=args.per_ontology,
-                        min_score=args.min_score, embeddings=args.embeddings, model=args.model,
+                        min_score=args.min_score, embeddings=args.embeddings, min_cosine=args.min_cosine, model=args.model,
                         progress=lambda d, t: print(f"\r{d} of {t} lookups", end="", file=sys.stderr))
     except ValueError as exc:
         ap.error(str(exc))

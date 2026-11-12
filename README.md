@@ -86,7 +86,7 @@ One row per match:
 | `match_type` | `skos:exactMatch`: a label or synonym is the term (plurals and `sp.` aside) · `skos:closeMatch`: most words shared · `skos:relatedMatch`: some words shared |
 | `ontology`, `match_curie`, `match_id`, `match_label` | the matched term |
 | `confidence` | 1.0 exact as written, 0.95 exact up to plurals, then by word overlap |
-| `cosine` | embedding similarity (0..1) with `verdy[embeddings]` installed; empty otherwise |
+| `cosine` | embedding similarity (0..1) with `verdy[embeddings]` installed; empty otherwise. A match is kept on it from `min_cosine` (default 0.70); from 0.80 it is a closeMatch |
 | `word_overlap`, `rank` | how many words they share (0..1), and the place among this term's matches |
 | `definition` | the term's definition (units first, for CF) |
 | `searched_for` | the term after cleaning |
