@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="t d">
+  <title id="t">verdant</title>
+  <desc id="d">A kindly old tree with round spectacles, a moustache and a green coat: a place that became a person.</desc>
+  <defs>
+    <clipPath id="disc"><circle cx="256" cy="256" r="240"/></clipPath>
+  </defs>
+  <!-- background disc -->
+  <circle cx="256" cy="256" r="240" fill="#f3efe2"/>
+  <g clip-path="url(#disc)">
+    <!-- rolling green hills -->
+    <path d="M0 410 Q130 360 256 400 T512 392 V512 H0Z" fill="#9cbf7a"/>
+    <!-- crown: leaf clusters, which are also the grey-green hair -->
+    <g fill="#5f8f4e">
+      <circle cx="256" cy="150" r="92"/>
+      <circle cx="170" cy="182" r="66"/>
+      <circle cx="342" cy="182" r="66"/>
+      <circle cx="205" cy="104" r="56"/>
+      <circle cx="307" cy="104" r="56"/>
+    </g>
+    <g fill="#7aa866">
+      <circle cx="232" cy="118" r="34"/>
+      <circle cx="300" cy="140" r="28"/>
+      <circle cx="186" cy="170" r="24"/>
+      <circle cx="340" cy="186" r="22"/>
+    </g>
+    <!-- trunk, which is the face -->
+    <path d="M196 196 Q192 290 176 372 H336 Q320 290 316 196 Q256 176 196 196Z" fill="#a9825a"/>
+    <!-- bark lines -->
+    <g fill="none" stroke="#8a6743" stroke-width="4" stroke-linecap="round">
+      <path d="M214 214 Q210 236 216 252"/>
+      <path d="M298 214 Q302 236 296 252"/>
+    </g>
+    <!-- kind eyes behind round wire spectacles -->
+    <g fill="#3b2a1c">
+      <circle cx="230" cy="246" r="7"/>
+      <circle cx="282" cy="246" r="7"/>
+    </g>
+    <g fill="none" stroke="#c9b48a" stroke-width="5">
+      <circle cx="230" cy="248" r="20"/>
+      <circle cx="282" cy="248" r="20"/>
+      <path d="M250 246 Q256 240 262 246"/>
+    </g>
+    <!-- nose -->
+    <path d="M256 254 Q244 282 252 288 Q260 292 266 284" fill="#9a734c"/>
+    <!-- moustache: two small leafy branches -->
+    <g fill="#4d4a3f">
+      <path d="M256 294 Q232 284 214 296 Q204 304 196 300 Q206 318 230 312 Q248 308 256 300Z"/>
+      <path d="M256 294 Q280 284 298 296 Q308 304 316 300 Q306 318 282 312 Q264 308 256 300Z"/>
+    </g>
+    <!-- gentle smile -->
+    <path d="M240 322 Q256 332 272 322" fill="none" stroke="#5a3f28" stroke-width="4" stroke-linecap="round"/>
+    <!-- green coat with lapels, white collar and a dark tie -->
+    <path d="M120 512 Q132 388 196 360 L256 400 L316 360 Q380 388 392 512Z" fill="#45573a"/>
+    <path d="M226 370 L256 400 L286 370 L276 362 L256 382 L236 362Z" fill="#f4f1e8"/>
+    <path d="M250 392 L262 392 L268 450 L256 466 L244 450Z" fill="#26261f"/>
+    <path d="M196 360 L256 430 L226 470 L186 396Z" fill="#53693f"/>
+    <path d="M316 360 L256 430 L286 470 L326 396Z" fill="#53693f"/>
+    <circle cx="232" cy="486" r="6" fill="#26261f"/>
+    <!-- roots reaching out of the coat into the hills -->
+    <g fill="none" stroke="#8a6743" stroke-width="7" stroke-linecap="round">
+      <path d="M140 470 Q100 470 70 492"/>
+      <path d="M372 470 Q412 470 442 492"/>
+    </g>
+  </g>
+  <circle cx="256" cy="256" r="240" fill="none" stroke="#45573a" stroke-width="10"/>
+</svg>

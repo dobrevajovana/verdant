@@ -1,0 +1,50 @@
+# curie_map:
+#   term: https://w3id.org/verdant/term/
+#   ENVO: http://purl.obolibrary.org/obo/ENVO_
+#   NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
+#   PATO: http://purl.obolibrary.org/obo/PATO_
+#   GBIF: https://www.gbif.org/species/
+#   wikidata: http://www.wikidata.org/entity/
+#   CF: http://vocab.nerc.ac.uk/standard_name/
+#   skos: http://www.w3.org/2004/02/skos/core#
+#   semapv: https://w3id.org/semapv/vocab/
+# mapping_set_id: https://w3id.org/verdant/terms.matches.sssom.tsv
+# mapping_set_description: Lexical matches found by verdant; not reviewed.
+subject_id	subject_label	subject_category	predicate_id	object_id	object_label	mapping_justification	confidence	object_source	mapping_tool	comment
+term:h3	Sea cliffs and shingle or stony beaches	habitat	skos:relatedMatch	ENVO:00000088	sea cliff	semapv:LexicalMatching	0.46	ENVO	verdant	word overlap 0.4; rank 1
+term:h3	Sea cliffs and shingle or stony beaches	habitat	skos:relatedMatch	ENVO:00000545	shingle beach	semapv:LexicalMatching	0.46	ENVO	verdant	word overlap 0.4; rank 2
+term:h3	Sea cliffs and shingle or stony beaches	habitat	skos:relatedMatch	ENVO:00000092	sea beach	semapv:LexicalMatching	0.46	ENVO	verdant	word overlap 0.4; rank 3
+term:h4	Peat bog	habitat	skos:exactMatch	ENVO:00000044	peatland	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+term:p1	air_temperature	parameter	skos:exactMatch	ENVO:09200001	temperature of air	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+term:p3	cloud liquid water content	parameter	skos:relatedMatch	ENVO:00002006	liquid water	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 1
+term:p3	cloud liquid water content	parameter	skos:relatedMatch	ENVO:09000026	concentration of liquid water in soil	semapv:LexicalMatching	0.46	ENVO	verdant	word overlap 0.4; rank 2
+term:p3	cloud liquid water content	parameter	skos:relatedMatch	ENVO:01001428	water-based cloud	semapv:LexicalMatching	0.46	ENVO	verdant	word overlap 0.4; rank 3
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	ENVO:3100036	concentration of chlorophyll in liquid water	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 1
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	ENVO:3100008	concentration of chlorophyll a in liquid water	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 2
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	ENVO:3100009	concentration of chlorophyll b in liquid water	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 3
+term:s1	Lynx lynx	species	skos:exactMatch	NCBITaxon:13125	Lynx lynx	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+term:s2	Elphidium sp.	species	skos:exactMatch	NCBITaxon:1747686	Elphidium sp.	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+term:s3	Posidonia oceanica	species	skos:exactMatch	NCBITaxon:55489	Posidonia oceanica	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+term:s1	Lynx lynx	species	skos:exactMatch	GBIF:2435240	Lynx lynx	semapv:LexicalMatching	1.0	GBIF	verdant	word overlap 1.0; rank 1
+term:s2	Elphidium sp.	species	skos:exactMatch	GBIF:8392966	Elphidium	semapv:LexicalMatching	1.0	GBIF	verdant	word overlap 1.0; rank 1
+term:s3	Posidonia oceanica	species	skos:exactMatch	GBIF:5328663	Posidonia oceanica	semapv:LexicalMatching	1.0	GBIF	verdant	word overlap 1.0; rank 1
+term:p1	air_temperature	parameter	skos:relatedMatch	PATO:0000146	temperature	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+term:p2	relative humidity	parameter	skos:relatedMatch	PATO:0015009	humidity	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+term:p4	salinity	parameter	skos:exactMatch	PATO:0085001	salinity	semapv:LexicalMatching	1.0	PATO	verdant	word overlap 1.0; rank 1
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	PATO:0000033	concentration of	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+term:p1	air_temperature	parameter	skos:exactMatch	CF:air_temperature	air_temperature	semapv:LexicalMatching	1.0	CF	verdant	word overlap 1.0; rank 1
+term:p2	relative humidity	parameter	skos:exactMatch	CF:relative_humidity	relative_humidity	semapv:LexicalMatching	1.0	CF	verdant	word overlap 1.0; rank 1
+term:p3	cloud liquid water content	parameter	skos:closeMatch	CF:atmosphere_mass_content_of_cloud_liquid_water	atmosphere_mass_content_of_cloud_liquid_water	semapv:LexicalMatching	0.82	CF	verdant	word overlap 0.8; rank 1
+term:p3	cloud liquid water content	parameter	skos:closeMatch	CF:atmosphere_mass_content_of_convective_cloud_liquid_water	atmosphere_mass_content_of_convective_cloud_liquid_water	semapv:LexicalMatching	0.767	CF	verdant	word overlap 0.667; rank 2
+term:p3	cloud liquid water content	parameter	skos:closeMatch	CF:mass_content_of_cloud_liquid_water_in_atmosphere_layer	mass_content_of_cloud_liquid_water_in_atmosphere_layer	semapv:LexicalMatching	0.767	CF	verdant	word overlap 0.667; rank 3
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	CF:mass_concentration_of_chlorophyll_in_sea_water	mass_concentration_of_chlorophyll_in_sea_water	semapv:LexicalMatching	0.5	CF	verdant	word overlap 0.5; rank 1
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	CF:mass_concentration_of_chlorophyll_a_in_sea_ice	mass_concentration_of_chlorophyll_a_in_sea_ice	semapv:LexicalMatching	0.46	CF	verdant	word overlap 0.4; rank 2
+term:p5	chlorophyll a concentration	parameter	skos:relatedMatch	CF:mass_concentration_of_chlorophyll_a_in_sea_water	mass_concentration_of_chlorophyll_a_in_sea_water	semapv:LexicalMatching	0.46	CF	verdant	word overlap 0.4; rank 3
+term:s1	Lynx lynx	species	skos:exactMatch	wikidata:Q43375	Eurasian lynx	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:s3	Posidonia oceanica	species	skos:exactMatch	wikidata:Q544137	Posidonia oceanica	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:h1	1330 Atlantic salt meadows	habitat	skos:exactMatch	wikidata:Q105574174	Glauco-Puccinellietalia	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:h2	Spartina swards	habitat	skos:exactMatch	wikidata:Q61744273	Spartinion maritimae	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:h4	Peat bog	habitat	skos:exactMatch	wikidata:Q36449705	peatland	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:p1	air_temperature	parameter	skos:exactMatch	wikidata:Q1160424	air temperature	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:p2	relative humidity	parameter	skos:exactMatch	wikidata:Q2499617	relative humidity	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
+term:p4	salinity	parameter	skos:exactMatch	wikidata:Q179615	salinity	semapv:LexicalMatching	1.0	Wikidata	verdant	word overlap 1.0; rank 1
