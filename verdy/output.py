@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 COLUMNS = ["term_id", "term", "category", "match_type", "ontology", "match_curie", "match_label", "confidence",
-           "word_overlap", "rank", "match_id", "definition", "searched_for"]
+           "word_overlap", "cosine", "rank", "match_id", "definition", "searched_for"]
 PREFIXES = {"ENVO": "http://purl.obolibrary.org/obo/ENVO_", "NCBITaxon": "http://purl.obolibrary.org/obo/NCBITaxon_",
             "PATO": "http://purl.obolibrary.org/obo/PATO_", "OBA": "http://purl.obolibrary.org/obo/OBA_",
             "UO": "http://purl.obolibrary.org/obo/UO_", "CHEBI": "http://purl.obolibrary.org/obo/CHEBI_",
@@ -64,7 +64,8 @@ def to_sssom(matches: list[dict], name: str = "matches") -> str:
                     "object_id": m["match_curie"], "object_label": m["match_label"] or "",
                     "mapping_justification": "semapv:LexicalMatching", "confidence": m["confidence"],
                     "object_source": m["ontology"], "mapping_tool": "verdy",
-                    "comment": f"word overlap {m['word_overlap']}; rank {m['rank']}"})
+                    "comment": f"word overlap {m['word_overlap']}"
+                               + (f"; cosine {m['cosine']}" if m.get("cosine") is not None else "") + f"; rank {m['rank']}"})
     return buf.getvalue()
 
 

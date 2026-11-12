@@ -24,6 +24,9 @@ def main(argv=None) -> int:
     ap.add_argument("--out", type=Path, help="write here: .csv, .tsv, .sssom.tsv, .json or .xlsx (default: print)")
     ap.add_argument("--per-ontology", type=int, default=3, help="at most this many matches per term and ontology (3)")
     ap.add_argument("--min-score", type=float, default=0.34, help="least word overlap for a related match (0.34)")
+    ap.add_argument("--embeddings", action=argparse.BooleanOptionalAction, default=None,
+                    help="also compare by embedding cosine similarity (default: when verdy[embeddings] is installed)")
+    ap.add_argument("--model", help="SentenceTransformers model for --embeddings (default all-MiniLM-L6-v2)")
     ap.add_argument("--list", action="store_true", help="list the ready ontologies")
     args = ap.parse_args(argv)
     if args.list:
@@ -35,7 +38,7 @@ def main(argv=None) -> int:
     try:
         terms = read_terms(args.terms, args.column)
         matches = match(terms, args.ontologies, per_ontology=args.per_ontology,
-                        min_score=args.min_score,
+                        min_score=args.min_score, embeddings=args.embeddings, model=args.model,
                         progress=lambda d, t: print(f"\r{d} of {t} lookups", end="", file=sys.stderr))
     except ValueError as exc:
         ap.error(str(exc))

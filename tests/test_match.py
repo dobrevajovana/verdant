@@ -9,7 +9,7 @@ import json
 import pytest
 
 import verdy
-from verdy import sources
+from verdy import embed, sources
 
 ENVO = "http://purl.obolibrary.org/obo/ENVO_"
 TAXON = "http://purl.obolibrary.org/obo/NCBITaxon_"
@@ -26,6 +26,7 @@ def services(monkeypatch, tmp_path):
     """OLS4 (ENVO, NCBITaxon, PATO), GBIF, Wikidata and the CF table, answering from these tables."""
     monkeypatch.setattr(sources, "CACHE", tmp_path / "cache")
     monkeypatch.setattr(sources, "_cf_terms", None)
+    monkeypatch.setattr(embed, "available", lambda: False)        # words only, unless a test turns embeddings on
     (tmp_path / "cache").mkdir()
     (tmp_path / "cache" / "cf-standard-name-table.xml").write_bytes(CF)
     ols = {("envo", "estuary"): [{"iri": ENVO + "00000045", "label": "estuary", "obo_id": "ENVO:00000045"}],
@@ -192,3 +193,32 @@ def test_free_text_and_ena_ids_together(services):
     assert {(m["term_id"], m["term"]) for m in ms} >= {("SAMD1", "air"), ("SAMD1", "urban biome"), ("estuaries", "Estuaries")}
     sssom = verdy.to_sssom(ms)
     assert "biosample:SAMD1\t" in sssom and "term:estuaries" in sssom
+
+
+def test_embeddings_rank_by_cosine(services, monkeypatch):
+    """With embeddings, cosine similarity ranks candidates; words still decide exact matches."""
+    import numpy as np
+    monkeypatch.setattr(embed, "available", lambda: True)
+    meaning = {"coastal lagoons": [1, 0, 0], "lagoon": [0.9, 0.436, 0], "coastal water": [0.3, 0.954, 0],
+               "estuaries": [0, 0, 1], "estuary": [0, 0.1, 0.995]}
+
+    def fake_encode(texts, model=embed.MODEL):
+        return [np.array(v) / np.linalg.norm(v) for v in
+                (next((meaning[k] for k in meaning if t.lower().split(".")[0].strip() == k), [0.577, 0.577, 0.577])
+                 for t in texts)]
+    monkeypatch.setattr(embed, "encode", fake_encode)
+    ms = verdy.match(["Coastal lagoons", "Estuaries", "Lynx lynx"], ["envo", "ncbitaxon"])
+    lag = [m for m in ms if m["term"] == "Coastal lagoons"]
+    assert lag[0]["match_label"] == "lagoon" and lag[0]["match_type"] == "skos:closeMatch"   # cosine 0.9 >= 0.70
+    assert lag[0]["confidence"] == 0.9 and lag[0]["cosine"] == 0.9
+    assert all(m["match_label"] != "coastal water" for m in lag)          # cosine 0.3, overlap 0.33: dropped
+    assert next(m for m in ms if m["term"] == "Estuaries")["match_type"] == "skos:exactMatch"
+    lynx = next(m for m in ms if m["term"] == "Lynx lynx")
+    assert lynx["ontology"] == "NCBITaxon" and lynx["cosine"] is None      # taxonomies: exact names only
+    words = verdy.match(["Coastal lagoons"], ["envo"], embeddings=False)
+    assert words[0]["cosine"] is None and words[0]["match_type"] == "skos:relatedMatch"
+
+
+def test_embeddings_need_the_extra(services):
+    with pytest.raises(ValueError, match="verdy\\[embeddings\\]"):
+        verdy.match(["Estuaries"], ["envo"], embeddings=True)

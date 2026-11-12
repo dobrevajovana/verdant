@@ -257,7 +257,7 @@ def _ols(name: str, ontology: str, cache: Cache) -> list[dict] | None:
         if s > 0:
             desc = d.get("description")
             hits.append({"id": d["iri"], "curie": canon(d["iri"]) if "gold" in d["iri"] else d.get("obo_id") or canon(d["iri"]),
-                         "label": d.get("label"),
+                         "label": d.get("label"), "synonyms": (d.get("synonym") or [])[:5],
                          "score": round(s, 3), "exact": exact, "same": same,
                          "definition": (desc[0] if isinstance(desc, list) and desc else desc) or None})
     return hits
@@ -331,7 +331,7 @@ def _cf(name: str) -> list[dict]:
         s, exact, same = score(name, t["labels"])
         if s >= 0.25:
             out.append({"id": f"http://vocab.nerc.ac.uk/standard_name/{t['id']}/", "curie": f"CF:{t['id']}",
-                        "label": t["id"], "score": round(s, 3), "exact": exact, "same": same,
+                        "label": t["id"], "synonyms": t["labels"][:5], "score": round(s, 3), "exact": exact, "same": same,
                         "definition": (f"[{t['units']}] " if t["units"] else "") + t["description"][:200]})
     return out
 

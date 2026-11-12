@@ -25,6 +25,7 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from verdy import embed
 from verdy.resolve import SAMPLE_FIELDS, kind, resolve
 from verdy.sources import TAXONOMIES, ontology_info, query_text, search
 
@@ -129,41 +130,57 @@ def _ontologies(ontologies) -> list[str]:
     return list(dict.fromkeys(o.strip().lower() for o in ontologies or [] if o and o.strip()))
 
 
-def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontology: int, min_score: float) -> list[dict]:
+def _matches(term: dict, ontology: str, short: str, hits: list[dict], per_ontology: int, min_score: float,
+             cos: list[float] | None = None) -> list[dict]:
+    """Pick and type the matches. Words decide exact matches; with embeddings, cosine
+    similarity also ranks the others and can admit a term that shares no word with the name."""
+    if cos is not None:
+        for h, c in zip(hits, cos):
+            h["cosine"] = round(c, 4)
     exact = [h for h in hits if h["exact"]]
     if ontology in TAXONOMIES or exact:
         chosen = exact[:1]
+    elif cos is not None:
+        keep = [h for h in hits if h["cosine"] >= embed.RELATED or h["score"] >= min_score]
+        chosen = sorted(keep, key=lambda h: -max(h["cosine"], h["score"]))[:per_ontology]
     else:
         chosen = [h for h in hits if h["score"] >= min_score][:per_ontology]
     out = []
     for rank, h in enumerate(chosen, 1):
+        c = h.get("cosine")
         if h["exact"]:
             kind, conf = "skos:exactMatch", 1.0 if h["same"] else 0.95
-        elif h["score"] >= 0.6:
-            kind, conf = "skos:closeMatch", round(0.5 + 0.4 * h["score"], 3)
+        elif h["score"] >= 0.6 or (c is not None and c >= embed.CLOSE):
+            kind, conf = "skos:closeMatch", round(max(0.5 + 0.4 * h["score"], c or 0), 3)
         else:
-            kind, conf = "skos:relatedMatch", round(0.3 + 0.4 * h["score"], 3)
+            kind, conf = "skos:relatedMatch", round(max(0.3 + 0.4 * h["score"], c or 0), 3)
         out.append({"term_id": term["id"], "term": term["label"], "category": term.get("category"),
                     "match_type": kind, "ontology": short, "match_id": h["id"], "match_curie": h["curie"],
-                    "match_label": h["label"], "confidence": conf, "word_overlap": h["score"], "rank": rank,
-                    "definition": h.get("definition"), "searched_for": query_text(term["label"])})
+                    "match_label": h["label"], "confidence": conf, "word_overlap": h["score"], "cosine": c,
+                    "rank": rank, "definition": h.get("definition"), "searched_for": query_text(term["label"])})
     return out
 
 
 def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3, min_score: float = 0.34,
-          fields=SAMPLE_FIELDS, progress=None, workers: int = 6) -> list[dict]:
+          embeddings: bool | None = None, model: str | None = None, fields=SAMPLE_FIELDS, progress=None,
+          workers: int = 6) -> list[dict]:
     """Matches for every ID or term in ``data`` in each of ``ontologies``: one dict per match
     with term_id (your ID, or the term), term (the name searched), category (the field it
     came from), match_type, ontology, match_id, match_curie, match_label, confidence,
-    word_overlap, rank, definition, searched_for.
+    word_overlap, cosine, rank, definition, searched_for.
 
     ``ontologies``: a list or a comma-separated string of IDs (``verdy.ONTOLOGIES`` or any
-    OLS4 ontology). ``fields``: which ENA sample fields to search for a sample, run or project.
-    ``progress(done, total)`` is called as names are looked up. IDs nothing was found for
-    are in ``match.unresolved`` after the call."""
+    OLS4 ontology). ``embeddings``: also compare by cosine similarity of SentenceTransformers
+    embeddings (default: when ``verdy[embeddings]`` is installed); ``model`` names the model
+    (default all-MiniLM-L6-v2). ``fields``: which ENA sample fields to search for a sample,
+    run or project. ``progress(done, total)`` is called as names are looked up. IDs nothing
+    was found for are in ``match.unresolved`` after the call."""
     chosen = _ontologies(ontologies)
     if not chosen:
         raise ValueError("Choose at least one ontology, e.g. ontologies=['envo', 'ncbitaxon'].")
+    use_embeddings = embed.available() if embeddings is None else embeddings
+    if use_embeddings and not embed.available():
+        raise ValueError('embeddings=True needs sentence-transformers: pip install "verdy[embeddings]"')
     terms = data if isinstance(data, list) and data and isinstance(data[0], dict) and {"id", "label"} <= set(data[0]) \
         else read_terms(data, column)
     terms, match.unresolved = resolve_terms(terms, fields, workers)
@@ -174,15 +191,28 @@ def match(data, ontologies, *, column: str | None = None, per_ontology: int = 3,
             raise ValueError(f"Unknown ontology “{o}”: use one of verdy.ONTOLOGIES or an OLS4 ontology ID.")
         shorts[o] = info["short"]
 
+    top = 10 if use_embeddings else 5          # more candidates when embeddings will rank them
     tasks = [(t, o) for o in chosen for t in terms]
-    out, done = [], 0
+    found, done = [], 0
     with ThreadPoolExecutor(max_workers=2 if "wikidata" in chosen else workers) as pool:
-        for t, o, hits in pool.map(lambda task: (*task, search(task[0]["label"], task[1])), tasks):
+        for t, o, hits in pool.map(lambda task: (*task, search(task[0]["label"], task[1], top=top)), tasks):
             done += 1
             if progress:
                 progress(done, len(tasks))
             if hits:
-                out.extend(_matches(t, o, shorts[o], hits, per_ontology, min_score))
+                found.append((t, o, hits))
+
+    cos: dict[int, list[float]] = {}
+    if use_embeddings:                         # one batch for all names and candidates (not taxonomies)
+        pairs = [(i, query_text(t["label"]), embed.candidate_text(h))
+                 for i, (t, o, hits) in enumerate(found) if o not in TAXONOMIES for h in hits]
+        sims = embed.cosine([p[1] for p in pairs], [p[2] for p in pairs], **({"model": model} if model else {}))
+        for (i, _, _), s in zip(pairs, sims):
+            cos.setdefault(i, []).append(s)
+
+    out = []
+    for i, (t, o, hits) in enumerate(found):
+        out.extend(_matches(t, o, shorts[o], hits, per_ontology, min_score, cos.get(i)))
     return out
 
 
