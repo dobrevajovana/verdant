@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" width="200" alt="VERDY logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dobrevajovana/verdy/main/logo.png" width="200" alt="VERDY logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
 
 # VERDY
 

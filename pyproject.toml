@@ -11,6 +11,11 @@ requires-python = ">=3.10"
 dependencies = ["requests>=2.31"]
 authors = [{ name = "Jovana Dobreva" }]
 
+[project.urls]
+Homepage = "https://github.com/dobrevajovana/verdy"
+Source = "https://github.com/dobrevajovana/verdy"
+Issues = "https://github.com/dobrevajovana/verdy/issues"
+
 [project.optional-dependencies]
 excel = ["pandas>=2.0", "openpyxl>=3.1"]
 test = ["pytest>=7"]
