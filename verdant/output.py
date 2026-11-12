@@ -16,7 +16,8 @@ PREFIXES = {"ENVO": "http://purl.obolibrary.org/obo/ENVO_", "NCBITaxon": "http:/
             "OBI": "http://purl.obolibrary.org/obo/OBI_", "UBERON": "http://purl.obolibrary.org/obo/UBERON_",
             "PO": "http://purl.obolibrary.org/obo/PO_", "GO": "http://purl.obolibrary.org/obo/GO_",
             "GBIF": "https://www.gbif.org/species/", "wikidata": "http://www.wikidata.org/entity/",
-            "CF": "http://vocab.nerc.ac.uk/standard_name/"}
+            "CF": "http://vocab.nerc.ac.uk/standard_name/", "GOLD": "https://w3id.org/gold.vocab/",
+            "GOLD.path": "https://w3id.org/gold.path/", "n2k": "https://w3id.org/verdant/natura2000/"}   # local: Natura 2000 has no URIs of its own
 
 
 def to_table(matches: list[dict], sep: str = ",") -> str:
@@ -27,10 +28,26 @@ def to_table(matches: list[dict], sep: str = ",") -> str:
     return buf.getvalue()
 
 
+def _subject(term_id: str) -> str:
+    """Your ID as a CURIE: ENA accessions with their registry prefix, other IDs as they are,
+    free text under term:."""
+    t = str(term_id)
+    if re.match(r"^SAM[NED][A-Z]?\d+$", t):
+        return "biosample:" + t
+    if re.match(r"^([EDS]R[RXSP]|PRJ[EDN][A-Z])\d+$", t):
+        return "ena.embl:" + t
+    if re.match(r"^[A-Za-z][\w.]*:\S+$", t) or t.startswith("http"):
+        return t
+    if re.match(r"^Q\d+$", t):
+        return "wikidata:" + t
+    return "term:" + re.sub(r"\s+", "_", t)
+
+
 def to_sssom(matches: list[dict], name: str = "matches") -> str:
     """SSSOM TSV: lexical matches with their confidence, subjects as ``term:<term_id>``."""
     used = {m["match_curie"].split(":", 1)[0] for m in matches if ":" in m["match_curie"]}
-    header = ["# curie_map:", "#   term: https://w3id.org/verdant/term/"] + \
+    header = ["# curie_map:", "#   term: https://w3id.org/verdant/term/",
+              "#   biosample: https://www.ebi.ac.uk/biosamples/samples/", "#   ena.embl: https://www.ebi.ac.uk/ena/browser/view/"] + \
         [f"#   {p}: {u}" for p, u in PREFIXES.items() if p in used] + [
         "#   skos: http://www.w3.org/2004/02/skos/core#", "#   semapv: https://w3id.org/semapv/vocab/",
         f"# mapping_set_id: https://w3id.org/verdant/{re.sub(r'[^A-Za-z0-9_.-]+', '-', name)}.sssom.tsv",
@@ -42,7 +59,7 @@ def to_sssom(matches: list[dict], name: str = "matches") -> str:
     w = csv.DictWriter(buf, fieldnames=fields, delimiter="\t", lineterminator="\n")
     w.writeheader()
     for m in matches:
-        w.writerow({"subject_id": "term:" + re.sub(r"\s+", "_", m["term_id"]), "subject_label": m["term"],
+        w.writerow({"subject_id": _subject(m["term_id"]), "subject_label": m["term"],
                     "subject_category": m.get("category") or "", "predicate_id": m["match_type"],
                     "object_id": m["match_curie"], "object_label": m["match_label"] or "",
                     "mapping_justification": "semapv:LexicalMatching", "confidence": m["confidence"],

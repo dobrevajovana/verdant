@@ -1,26 +1,32 @@
-"""verdant: match your own terms to the ontologies you choose.
+"""verdant: predict matches for your ENA IDs or free-text terms in the ontologies you choose.
 
-Your terms (species, habitats, parameters, measurement names, sample descriptions, ...)
-go in as a CSV / TSV / Excel file, a text file or a Python list; for each ontology you
-choose, out come its exact and most related terms.
+Input (a CSV / TSV / Excel file, a text file or a Python list) holds ENA IDs (samples,
+runs, projects) and/or free text (species, habitats, parameters, measurements). ENA IDs
+are looked up in ENA for their organism and environment fields; every name is searched in
+each ontology you choose; out come its exact and most related terms.
 
     import verdant
 
-    matches = verdant.match("my_terms.csv", ontologies=["envo", "pato", "cf", "ncbitaxon", "gbif"])
-    verdant.save(matches, "my_terms.matches.csv")        # or .tsv / .sssom.tsv / .json / .xlsx
-    verdant.unmatched("my_terms.csv", matches, ["envo", "pato"])   # what each found nothing for
+    matches = verdant.match("my_input.csv", ontologies=["natura2000", "gold", "envo", "ncbitaxon"])
+    verdant.save(matches, "my_input.matches.csv")        # or .tsv / .sssom.tsv / .json / .xlsx
+    verdant.match.unresolved                             # ENA IDs ENA did not know
+    verdant.unmatched("my_input.csv", matches, ["envo"]) # names an ontology found nothing for
 
-    verdant.ONTOLOGIES                  # the ready ones; any OLS4 ontology ID works too
-    verdant.search("air temperature", "cf")   # one term in one ontology, its best terms
+    verdant.ONTOLOGIES                       # the ready ones; any OLS4 ontology ID works too
+    verdant.search("air temperature", "cf")  # one name in one ontology, its best terms
+    verdant.resolve("SAMD00132352")          # what ENA says about an ID
 
-From the shell:  verdant my_terms.csv -o envo,pato,cf --out my_terms.matches.csv
+From the shell:  verdant my_input.csv -o natura2000,gold,envo --out my_input.matches.csv
 """
 
-from verdant.match import MATCH_TYPES, match, read_terms, unmatched
+from verdant.match import MATCH_TYPES, match, read_terms, resolve_terms, unmatched
+from verdant.resolve import SAMPLE_FIELDS, resolve
 from verdant.output import save, to_dataframe, to_sssom, to_table
 from verdant.sources import ONTOLOGIES, ontology_info, search
 
 __version__ = "0.1.0"
 
-__all__ = ["match", "search", "read_terms", "unmatched", "save", "to_table", "to_sssom", "to_dataframe",
+predict = match          # the same: IDs or names in, predicted matches out
+
+__all__ = ["match", "predict", "resolve", "resolve_terms", "SAMPLE_FIELDS", "search", "read_terms", "unmatched", "save", "to_table", "to_sssom", "to_dataframe",
            "ONTOLOGIES", "MATCH_TYPES", "ontology_info", "__version__"]

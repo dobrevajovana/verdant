@@ -8,6 +8,9 @@ ontology ID works too (https://www.ebi.ac.uk/ols4/ontologies).
   only returns terms holding every word of a query).
 * ``gbif``: the GBIF Backbone's name matcher.
 * ``wikidata``: Wikidata's item search.
+* ``natura2000``: the Natura 2000 habitat types and species of the EEA's Article 17 report
+  (2019-2024), fetched from its public service once and searched locally; by name, or by
+  code ('1330 Atlantic salt meadows').
 * ``cf``: the CF Standard Names table (climate and forecast variables), read once and
   searched locally.
 
@@ -38,6 +41,7 @@ CF_TABLE = "https://cfconventions.org/Data/cf-standard-names/current/src/cf-stan
 ONTOLOGIES = {
     # environments, habitats, samples
     "envo": "ENVO: environments, habitats, environmental materials",
+    "natura2000": "Natura 2000 habitat types and species (EEA Article 17 lists)",
     "gold": "GOLD ecosystem classification",
     # organisms
     "ncbitaxon": "NCBI Taxonomy",
@@ -56,9 +60,11 @@ ONTOLOGIES = {
     # general
     "wikidata": "Wikidata",
 }
-SHORT = {"gbif": "GBIF", "wikidata": "Wikidata", "ncbitaxon": "NCBITaxon", "cf": "CF"}
+NATURA = "natura2000"
+ART17 = "https://bio.discomap.eea.europa.eu/arcgis/rest/services/Article17/ART17_2019_2024_public/MapServer"
+SHORT = {NATURA: "Natura2000", "gbif": "GBIF", "wikidata": "Wikidata", "ncbitaxon": "NCBITaxon", "cf": "CF"}
 TAXONOMIES = {"ncbitaxon", "gbif"}      # a near name there is another taxon: exact matches only
-LOCAL = {"gbif", "wikidata", "cf"}
+LOCAL = {"gbif", "wikidata", "cf", NATURA}
 
 _STOP = {"the", "and", "with", "of", "in", "on", "or", "by", "for", "to", "a", "an", "which", "are", "is", "sp", "spp",
          "cf", "aff", "type", "types", "other", "including", "mainly", "where", "at", "per", "from"}
@@ -127,6 +133,8 @@ def canon(identifier) -> str:
         return f"GBIF:{m.group(1)}"
     if m := re.search(r"wikidata\.org/(?:entity|wiki)/(Q\d+)", o):
         return f"wikidata:{m.group(1)}"
+    if m := re.search(r"w3id\.org/gold\.(path|vocab)/([\w.-]+)", o):
+        return f"{'GOLD.path' if m.group(1) == 'path' else 'GOLD'}:{m.group(2)}"
     if m := re.search(r"vocab\.nerc\.ac\.uk/standard_name/([\w-]+)", o):
         return f"CF:{m.group(1)}"
     return o
@@ -164,7 +172,11 @@ def score(name: str, labels: list[str]) -> tuple[float, bool, bool]:
     """How well the best of a term's labels fits the name (word overlap, 0..1); whether one
     has the same words (plurals and 'sp.' aside); whether one is the name as written."""
     nw = words(name)
-    best, exact, same = 0.0, False, any(_norm(lab) == _norm(name) for lab in labels if lab)
+    # an abbreviation ('AIR' for a chemical) counts only when the name is written the same way
+    labels = [lab for lab in labels if lab and not (lab.isupper() and len(lab) <= 8 and lab != name.strip())]
+    # each label also without a bracketed part, and a path's last step ('Environmental > Air > Outdoor Air')
+    labels = list(dict.fromkeys(v for lab in labels if lab for v in (lab, query_text(lab), lab.split(">")[-1].strip()) if v))
+    best, exact, same = 0.0, False, any(_norm(lab) == _norm(name) for lab in labels)
     for lab in labels:
         lw = words(lab)
         if not lw or not nw:
@@ -229,7 +241,7 @@ def _ols(name: str, ontology: str, cache: Cache) -> list[dict] | None:
             failed = True
             continue
         for d in (res.get("response") or {}).get("docs") or []:
-            if d.get("iri") in seen or d.get("is_defining_ontology") is False or d.get("is_obsolete"):
+            if d.get("iri") in seen or d.get("is_obsolete"):
                 continue
             seen.add(d["iri"])
             docs.append(d)
@@ -237,12 +249,15 @@ def _ols(name: str, ontology: str, cache: Cache) -> list[dict] | None:
             break
     if failed and not docs:
         return None
+    if any(d.get("is_defining_ontology") for d in docs):          # its own terms, not imported ones;
+        docs = [d for d in docs if d.get("is_defining_ontology")]  # (some, like GOLD, mark none as its own)
     hits = []
     for d in docs:
         s, exact, same = score(name, [d.get("label") or "", *(d.get("synonym") or [])])
         if s > 0:
             desc = d.get("description")
-            hits.append({"id": d["iri"], "curie": d.get("obo_id") or canon(d["iri"]), "label": d.get("label"),
+            hits.append({"id": d["iri"], "curie": canon(d["iri"]) if "gold" in d["iri"] else d.get("obo_id") or canon(d["iri"]),
+                         "label": d.get("label"),
                          "score": round(s, 3), "exact": exact, "same": same,
                          "definition": (desc[0] if isinstance(desc, list) and desc else desc) or None})
     return hits
@@ -321,6 +336,51 @@ def _cf(name: str) -> list[dict]:
     return out
 
 
+def natura_terms() -> list[dict]:
+    """Natura 2000 habitat types and species, with codes, from the Article 17 layers (cached)."""
+    def fetch(layer, fields):
+        d = _json(f"{ART17}/{layer}/query", where="1=1", outFields=",".join(fields), returnDistinctValues="true",
+                  returnGeometry="false", f="json")
+        return None if d is None or "features" not in d else [f["attributes"] for f in d["features"]]
+
+    def build():
+        hab = fetch(5, ["reference_habitatlist.habitat_code", "reference_habitatlist.label"])
+        spe = fetch(6, ["reference_specieslist.species_code", "reference_specieslist.species_name",
+                        "reference_specieslist.taxonomical_group"])
+        if hab is None or spe is None:
+            return None
+        out = [{"code": a["reference_habitatlist.habitat_code"], "label": a["reference_habitatlist.label"],
+                "category": "habitat"} for a in hab if a.get("reference_habitatlist.habitat_code")]
+        out += [{"code": a["reference_specieslist.species_code"], "label": a["reference_specieslist.species_name"],
+                 "category": "species", "group": a.get("reference_specieslist.taxonomical_group")}
+                for a in spe if a.get("reference_specieslist.species_name")]
+        return out
+    terms = Cache("natura2000").get("art17_2019_2024", build)
+    if terms is None:
+        raise RuntimeError("The EEA Article 17 service did not answer; try again later.")
+    return terms
+
+
+_CODE = re.compile(r"^(?:n2k:|natura2000:)?(\d[0-9A-Z]{3})\b", re.I)
+
+
+def _natura(name: str, raw: str) -> list[dict]:
+    terms = natura_terms()
+    hit = lambda t, s, exact, same, note=None: {
+        "id": f"n2k:{t['code']}", "curie": f"n2k:{t['code']}", "label": f"{t['code']} {t['label']}" if t["category"] == "habitat" else t["label"],
+        "score": round(s, 3), "exact": exact, "same": same,
+        "definition": note or ("Annex I habitat type" if t["category"] == "habitat" else f"species · {t.get('group') or ''}")}
+    if (m := _CODE.match(raw.strip())) and (t := next((t for t in terms if t["code"] == m.group(1).upper()
+                                                       and t["category"] == "habitat"), None)):
+        return [hit(t, 1.0, True, True, "matched by its Annex I code")]
+    out = []
+    for t in terms:
+        s, exact, same = score(name, [t["label"]])
+        if s >= 0.25:
+            out.append(hit(t, s, exact, same))
+    return out
+
+
 def search(name: str, ontology: str, top: int = 5) -> list[dict] | None:
     """The ontology's best terms for ``name``, best first (exact names first, then by word
     overlap, then in the source's own order); None if the service did not answer."""
@@ -333,6 +393,8 @@ def search(name: str, ontology: str, top: int = 5) -> list[dict] | None:
         hits = _wikidata(q, Cache("search_wikidata"))
     elif ontology == "cf":
         hits = _cf(q)
+    elif ontology == NATURA:
+        hits = _natura(q, name)
     else:
         hits = _ols(q, ontology, Cache(f"search_{ontology}"))
     if hits is None:

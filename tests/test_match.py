@@ -33,20 +33,41 @@ def services(monkeypatch, tmp_path):
            ("envo", "coastal"): [{"iri": ENVO + "1", "label": "coastal water", "obo_id": "ENVO:1"}],
            ("ncbitaxon", "lynx lynx"): [{"iri": TAXON + "13125", "label": "Lynx lynx", "obo_id": "NCBITaxon:13125"}],
            ("ncbitaxon", "estuaries"): [{"iri": TAXON + "1", "label": "estuaries bacterium"}],
-           ("pato", "temperature"): [{"iri": PATO + "0000146", "label": "temperature", "obo_id": "PATO:0000146"}]}
+           ("pato", "temperature"): [{"iri": PATO + "0000146", "label": "temperature", "obo_id": "PATO:0000146"}],
+           ("envo", "urban biome"): [{"iri": ENVO + "01000249", "label": "urban biome", "obo_id": "ENVO:01000249",
+                                      "is_defining_ontology": True}],
+           ("envo", "air"): [{"iri": ENVO + "00002005", "label": "air", "obo_id": "ENVO:00002005", "is_defining_ontology": True}],
+           ("gold", "air"): [{"iri": "https://w3id.org/gold.path/3962", "label": "Environmental > Air > Outdoor Air",
+                              "is_defining_ontology": False},
+                             {"iri": "https://w3id.org/gold.vocab/Air", "label": "Air", "is_defining_ontology": False}]}
     calls = []
 
     def fake(url, **p):
         calls.append(url)
+        if url.endswith("/portal/api/search"):                         # ENA samples
+            acc = p["query"].split('"')[1]
+            return [{"sample_accession": "SAMD1", "scientific_name": "air metagenome", "broad_scale_environmental_context":
+                     "urban biome", "local_environmental_context": "air", "environmental_medium": "air",
+                     "isolation_source": "missing"}] if acc in ("SAMD1", "ERS1") else []
+        if url.endswith("/portal/api/filereport"):                     # ENA runs and projects
+            return {"ERR1": [{"sample_accession": "SAMD1"}], "PRJEB1": [{"sample_accession": "SAMD1"},
+                    {"sample_accession": "SAMD1"}]}.get(p["accession"], [])
         if "/ontologies/" in url:
             oid = url.rsplit("/", 1)[1]
             return {"config": {"title": oid, "preferredPrefix": {"ncbitaxon": "NCBITaxon"}.get(oid, oid.upper())}} \
-                if oid in ("envo", "ncbitaxon", "pato") else {}
+                if oid in ("envo", "ncbitaxon", "pato", "gold") else {}
         if url.endswith("/search"):
             return {"response": {"docs": ols.get((p["ontology"], p["q"].lower()), [])}}
         if "species/match" in url:
             return {"usageKey": 2435240, "canonicalName": "Lynx lynx", "matchType": "EXACT"} if p["name"] == "Lynx lynx" \
                 else {"matchType": "NONE"}
+        if "MapServer" in url:                                          # Natura 2000 (Article 17)
+            if "/5/" in url:
+                return {"features": [{"attributes": {"reference_habitatlist.habitat_code": "1130",
+                                                     "reference_habitatlist.label": "Estuaries"}}]}
+            return {"features": [{"attributes": {"reference_specieslist.species_code": "1361",
+                                                 "reference_specieslist.species_name": "Lynx lynx",
+                                                 "reference_specieslist.taxonomical_group": "Mammals"}}]}
         if "wikidata" in url:
             return {"search": [{"id": "Q43375", "label": "Eurasian lynx", "aliases": ["Lynx lynx"]}]} if p["search"] == "Lynx lynx" \
                 else {"search": [{"id": "Q9", "label": "some moth", "aliases": ["coastal lagoons moth"]}]}
@@ -137,5 +158,37 @@ def test_command_line(services, tmp_path, capsys):
     assert main(["--list"]) == 0 and "ncbitaxon" in capsys.readouterr().out
     assert main([str(tmp_path / "n.csv"), "-o", "envo,ncbitaxon", "--out", str(tmp_path / "o.csv")]) == 0
     err = capsys.readouterr().err
-    assert "2 matches for 2 of 2 terms" in err and "nothing in envo for: Lynx lynx" in err
+    assert "2 matches for 2 of 2 inputs" in err and "nothing in envo for: Lynx lynx" in err
     assert (tmp_path / "o.csv").exists()
+
+
+def test_ids_are_looked_up_in_ena_and_the_ontologies(services):
+    import importlib
+    r = importlib.import_module("verdant.resolve")
+    assert [r.kind(x) for x in ("SAMD1", "ERS1", "ERR1", "PRJEB1", "ENVO:00000045", "air")] == \
+        ["sample", "sample", "run", "project", "name", "name"]
+    assert r.resolve("SAMD1") == [("scientific_name", "air metagenome"), ("broad_scale_environmental_context", "urban biome"),
+                                  ("local_environmental_context", "air"), ("environmental_medium", "air")]    # 'missing' left out
+    assert r.resolve("ERR1") == r.resolve("SAMD1")
+    assert r.resolve("air temperature") == [("name", "air temperature")]
+    assert r.resolve("SAMD999") == []
+
+
+def test_ids_in_predictions_out(services, tmp_path):
+    (tmp_path / "ids.csv").write_text("sample_accession\nSAMD1\nEstuaries\nPRJEB1\nSAMD999\n")
+    ms = verdant.match(tmp_path / "ids.csv", ["envo", "gold", "natura2000"])
+    rows = {(m["term_id"], m["term"], m["ontology"], m["match_curie"] or m["match_id"]): m for m in ms}
+    air = rows[("SAMD1", "air", "ENVO", "ENVO:00002005")]
+    assert air["category"] == "local_environmental_context|environmental_medium" and air["match_type"] == "skos:exactMatch"
+    assert ("SAMD1", "urban biome", "ENVO", "ENVO:01000249") in rows
+    assert any(k[0] == "SAMD1" and k[2] == "GOLD" and "Air" in rows[k]["match_label"] for k in rows)   # GOLD kept
+    assert rows[("estuaries", "Estuaries", "Natura2000", "n2k:1130")]["match_type"] == "skos:exactMatch"
+    assert verdant.match.unresolved == ["SAMD999"]
+    assert not any(m["term_id"] == "PRJEB1" for m in ms)            # a project's rows carry its samples' IDs
+
+
+def test_free_text_and_ena_ids_together(services):
+    ms = verdant.match(["SAMD1", "Estuaries"], ["envo"])
+    assert {(m["term_id"], m["term"]) for m in ms} >= {("SAMD1", "air"), ("SAMD1", "urban biome"), ("estuaries", "Estuaries")}
+    sssom = verdant.to_sssom(ms)
+    assert "biosample:SAMD1\t" in sssom and "term:estuaries" in sssom

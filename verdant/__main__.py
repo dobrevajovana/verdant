@@ -11,14 +11,14 @@ import argparse
 import sys
 from pathlib import Path
 
-from verdant.match import match, read_terms, unmatched
+from verdant.match import match, read_terms, resolve_terms, unmatched
 from verdant.output import save, to_table
 from verdant.sources import ONTOLOGIES
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="verdant", description="Match your terms to the ontologies you choose.")
-    ap.add_argument("terms", nargs="?", help="CSV / TSV / Excel with a name column, or a text file with one term per line")
+    ap.add_argument("terms", nargs="?", help="CSV / TSV / Excel with an ID or name column, or a text file with one per line")
     ap.add_argument("-o", "--ontologies", help="comma-separated IDs: see --list; any OLS4 ontology ID works too")
     ap.add_argument("--column", help="the column holding the terms (found by its header otherwise)")
     ap.add_argument("--out", type=Path, help="write here: .csv, .tsv, .sssom.tsv, .json or .xlsx (default: print)")
@@ -40,13 +40,17 @@ def main(argv=None) -> int:
     except ValueError as exc:
         ap.error(str(exc))
     print(file=sys.stderr)
+    unresolved = match.unresolved
+    if unresolved:
+        print(f"nothing found for {len(unresolved)} IDs: {', '.join(unresolved[:20])}"
+              + (" ..." if len(unresolved) > 20 else ""), file=sys.stderr)
     if args.out:
         save(matches, args.out)
-        print(f"{len(matches)} matches for {len({m['term_id'] for m in matches})} of {len(terms)} terms -> {args.out}",
+        print(f"{len(matches)} matches for {len({m['term_id'] for m in matches})} of {len(terms)} inputs -> {args.out}",
               file=sys.stderr)
     else:
         sys.stdout.write(to_table(matches, "\t"))
-    for o, missing in unmatched(terms, matches, args.ontologies).items():
+    for o, missing in unmatched(resolve_terms(terms)[0], matches, args.ontologies).items():
         if missing:
             print(f"nothing in {o} for: {', '.join(missing)}", file=sys.stderr)
     return 0

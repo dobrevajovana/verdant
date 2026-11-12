@@ -1,0 +1,50 @@
+# curie_map:
+#   term: https://w3id.org/verdant/term/
+#   biosample: https://www.ebi.ac.uk/biosamples/samples/
+#   ena.embl: https://www.ebi.ac.uk/ena/browser/view/
+#   ENVO: http://purl.obolibrary.org/obo/ENVO_
+#   NCBITaxon: http://purl.obolibrary.org/obo/NCBITaxon_
+#   PATO: http://purl.obolibrary.org/obo/PATO_
+#   CF: http://vocab.nerc.ac.uk/standard_name/
+#   GOLD: https://w3id.org/gold.vocab/
+#   GOLD.path: https://w3id.org/gold.path/
+#   n2k: https://w3id.org/verdant/natura2000/
+#   skos: http://www.w3.org/2004/02/skos/core#
+#   semapv: https://w3id.org/semapv/vocab/
+# mapping_set_id: https://w3id.org/verdant/input.matches.sssom.tsv
+# mapping_set_description: Lexical matches found by verdant; not reviewed.
+subject_id	subject_label	subject_category	predicate_id	object_id	object_label	mapping_justification	confidence	object_source	mapping_tool	comment
+term:lynx_lynx	Lynx lynx		skos:exactMatch	n2k:1361	Lynx lynx	semapv:LexicalMatching	1.0	Natura2000	verdant	word overlap 1.0; rank 1
+term:atlantic_salt_meadows	Atlantic salt meadows		skos:exactMatch	n2k:1330	1330 Atlantic salt meadows (Glauco-Puccinellietalia maritimae)	semapv:LexicalMatching	1.0	Natura2000	verdant	word overlap 1.0; rank 1
+biosample:SAMD00132352	air metagenome	scientific_name	skos:relatedMatch	GOLD:Air	Air	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 1
+biosample:SAMD00132352	air metagenome	scientific_name	skos:relatedMatch	GOLD.path:5308	Engineered > Built environment > Spacecraft Assembly Cleanrooms > Air	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 2
+biosample:SAMD00132352	air	local_environmental_context|environmental_medium|environment_feature|environment_material	skos:exactMatch	GOLD:Air	Air	semapv:LexicalMatching	1.0	GOLD	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	air	broad_scale_environmental_context|environment_biome	skos:exactMatch	GOLD:Air	Air	semapv:LexicalMatching	1.0	GOLD	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	temperate forest	local_environmental_context|environment_feature	skos:relatedMatch	GOLD:Forest	Forest	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 1
+ena.embl:ERR9966617	temperate forest	local_environmental_context|environment_feature	skos:relatedMatch	GOLD.path:5817	Environmental > Terrestrial > Soil > Peat > Forest	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 2
+biosample:SAMEA110429224	Human	host_scientific_name	skos:exactMatch	GOLD:Human	Human	semapv:LexicalMatching	1.0	GOLD	verdant	word overlap 1.0; rank 1
+term:air_temperature	air_temperature		skos:relatedMatch	GOLD:Air	Air	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 1
+term:air_temperature	air_temperature		skos:relatedMatch	GOLD.path:5308	Engineered > Built environment > Spacecraft Assembly Cleanrooms > Air	semapv:LexicalMatching	0.5	GOLD	verdant	word overlap 0.5; rank 2
+biosample:SAMD00132352	air metagenome	scientific_name	skos:relatedMatch	ENVO:00002005	air	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 1
+biosample:SAMD00132352	urban biome	broad_scale_environmental_context|environment_biome	skos:exactMatch	ENVO:01000249	urban biome	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+biosample:SAMD00132352	air	local_environmental_context|environmental_medium|environment_feature|environment_material	skos:exactMatch	ENVO:00002005	air	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	air	broad_scale_environmental_context|environment_biome	skos:exactMatch	ENVO:00002005	air	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	temperate forest	local_environmental_context|environment_feature	skos:exactMatch	ENVO:01001805	temperate forest	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	mountain	environmental_medium|environment_material	skos:exactMatch	ENVO:00000081	mountain	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+biosample:SAMEA110429224	Human	host_scientific_name	skos:relatedMatch	ENVO:00000070	human construction	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 1
+biosample:SAMEA110429224	Human	host_scientific_name	skos:relatedMatch	ENVO:01000418	human house	semapv:LexicalMatching	0.5	ENVO	verdant	word overlap 0.5; rank 2
+term:air_temperature	air_temperature		skos:exactMatch	ENVO:09200001	temperature of air	semapv:LexicalMatching	1.0	ENVO	verdant	word overlap 1.0; rank 1
+biosample:SAMD00132352	air metagenome	scientific_name	skos:exactMatch	NCBITaxon:655179	air metagenome	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+ena.embl:ERR9966617	metagenome	scientific_name	skos:exactMatch	NCBITaxon:256318	metagenome	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+biosample:SAMEA110429224	Severe acute respiratory syndrome coronavirus 2	scientific_name	skos:exactMatch	NCBITaxon:2697049	Severe acute respiratory syndrome coronavirus 2	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+biosample:SAMEA110429224	Human	host_scientific_name	skos:exactMatch	NCBITaxon:9606	Homo sapiens	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+term:lynx_lynx	Lynx lynx		skos:exactMatch	NCBITaxon:13125	Lynx lynx	semapv:LexicalMatching	1.0	NCBITaxon	verdant	word overlap 1.0; rank 1
+biosample:SAMD00132352	air	local_environmental_context|environmental_medium|environment_feature|environment_material	skos:relatedMatch	PATO:0002376	inflated	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+ena.embl:ERR9966617	air	broad_scale_environmental_context|environment_biome	skos:relatedMatch	PATO:0002376	inflated	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+term:air_temperature	air_temperature		skos:relatedMatch	PATO:0000146	temperature	semapv:LexicalMatching	0.5	PATO	verdant	word overlap 0.5; rank 1
+term:salinity	salinity		skos:exactMatch	PATO:0085001	salinity	semapv:LexicalMatching	1.0	PATO	verdant	word overlap 1.0; rank 1
+biosample:SAMD00132352	air	local_environmental_context|environmental_medium|environment_feature|environment_material	skos:relatedMatch	CF:air_density	air_density	semapv:LexicalMatching	0.5	CF	verdant	word overlap 0.5; rank 1
+biosample:SAMD00132352	air	local_environmental_context|environmental_medium|environment_feature|environment_material	skos:relatedMatch	CF:air_pressure	air_pressure	semapv:LexicalMatching	0.5	CF	verdant	word overlap 0.5; rank 2
+ena.embl:ERR9966617	air	broad_scale_environmental_context|environment_biome	skos:relatedMatch	CF:air_density	air_density	semapv:LexicalMatching	0.5	CF	verdant	word overlap 0.5; rank 1
+ena.embl:ERR9966617	air	broad_scale_environmental_context|environment_biome	skos:relatedMatch	CF:air_pressure	air_pressure	semapv:LexicalMatching	0.5	CF	verdant	word overlap 0.5; rank 2
+term:air_temperature	air_temperature		skos:exactMatch	CF:air_temperature	air_temperature	semapv:LexicalMatching	1.0	CF	verdant	word overlap 1.0; rank 1
