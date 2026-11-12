@@ -52,6 +52,49 @@ or given with `column="..."`. One file can mix both kinds of value:
 `fields=` chooses other ENA sample fields to search (see ENA's `returnFields?result=sample`).
 After a run, `verdy.match.unresolved` lists the IDs ENA did not know.
 
+## How it works
+
+```
+ your file                 1. read            2. ENA lookup                 3. clean
+ ──────────               ─────────          ──────────────────            ─────────────────────
+ SAMD00132352      ──►    one value   ──►    ENA ID? ask ENA for the  ──►  "air temperature [K]"
+ ERR9966617               per row            sample's fields:               -> "air temperature"
+ air_temperature                             scientific_name,               "air_temperature"
+ Lynx lynx                                   env. context, medium...        -> "air temperature"
+                                             free text: kept as is          "1330 Atlantic salt meadows"
+                                                                            -> "Atlantic salt meadows"
+
+ 4. search each chosen ontology        5. score every term found         6. keep the best
+ ─────────────────────────────         ─────────────────────────         ───────────────────────
+ OLS4: exact search, then word    ──►  shared words between the    ──►   exact? keep only it
+ searches; GBIF matcher; Wikidata      name and the term's label         else up to 3 close /
+ search; CF and Natura 2000 lists      and synonyms (0..1)               related matches
+                                                                         -> your output file
+```
+
+1. **Read.** VERDY takes one value per row from the column it finds (or the one you name with `column=`).
+2. **ENA lookup.** A value that is an ENA accession is sent to the ENA Portal API:
+   - a sample (SAM…, ERS…) gives its descriptive fields;
+   - a run or experiment (ERR…, SRR…, ERX…) gives the fields of its sample;
+   - a project (PRJEB…, ERP…) gives every sample in it.
+
+   The fields are the organism (`scientific_name`), the broad-scale and local environmental context, the environmental medium, the biome, feature and material, the isolation source and the host. Empty values such as "missing" or "not applicable" are dropped. A value that occurs in several fields of one sample (for example "air" as both local context and medium) is searched once, and all its fields are listed in `category`. Any value that is not an ENA accession is free text and goes straight to step 3.
+3. **Clean.** VERDY removes a unit or note in brackets, underscores and a leading code before searching. Plurals and "sp." are ignored when comparing words.
+4. **Search** each ontology you chose, on its own:
+   - **OLS4 ontologies** (ENVO, NCBITaxon, PATO, GOLD, ChEBI, any OLS4 ID): first OLS4's exact search on the name as written. OLS4 only returns terms that contain every word of a query, so VERDY then also searches the singular form, pairs of key words and single key words. Obsolete terms are dropped, and so are terms another ontology only imports.
+   - **GBIF:** the GBIF Backbone name matcher.
+   - **Wikidata:** the Wikidata item search.
+   - **CF Standard Names:** the official table, downloaded once and searched locally, aliases included.
+   - **Natura 2000:** the habitat type and species lists of the EEA Article 17 report, fetched once and searched locally. A habitat can also be found by its code (`1330`).
+5. **Score.** Each term found is compared word by word with the name, using its label and synonyms. For a GOLD path, the comparison uses its last step: "Environmental > Air > Outdoor Air" counts as "Outdoor Air". The word overlap runs from 0 (no word shared) to 1 (the same words).
+   - **Exact match:** the term has the same words as the name. A short all-capital abbreviation counts only when your name is written that way, so "air" doesn't match a chemical whose synonym is "AIR".
+6. **Keep the best.**
+   - **Exact match found:** only that one is kept (`skos:exactMatch`, confidence 1.0 as written, 0.95 up to plurals).
+   - **Otherwise:** up to `per_ontology` (default 3) of the best terms are kept: `skos:closeMatch` from overlap 0.6, `skos:relatedMatch` from `min_score` (default 0.34).
+   - **Taxonomies (NCBITaxon, GBIF):** only exact names count, because a name one word off is a different taxon.
+
+Every answer from every source is cached in `~/.cache/verdy` (or `VERDY_CACHE`), so running the same file again makes no requests. Lookups run in parallel, with fewer at a time for Wikidata, which limits its users. A service that does not answer is retried twice and then skipped, rather than stopping the run. VERDY matches on words, not meaning; the `definition` column helps you check related matches.
+
 ## The ontologies
 
 `verdy.ONTOLOGIES` (or `verdy --list`):
@@ -89,12 +132,7 @@ One row per match:
 | `definition` | the term's definition (units first, for CF) |
 | `searched_for` | the term after cleaning |
 
-How the search works:
-* At most `per_ontology` matches (default 3) per term and ontology. When there is an exact match, only that one is given.
-* In the taxonomies (NCBITaxon, GBIF), only exact names count, because a near name is another taxon.
-* `verdy.unmatched(terms, matches, ontologies)` lists, per ontology, the terms it found nothing for.
-
-Every answer (ENA, OLS4, GBIF, Wikidata, the CF table, the Natura 2000 lists) is cached in `~/.cache/verdy` (or `VERDY_CACHE`), so a second run makes no requests.
+`verdy.unmatched(terms, matches, ontologies)` lists, per ontology, the terms it found nothing for.
 
 ## Example
 
