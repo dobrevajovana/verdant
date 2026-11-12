@@ -1,4 +1,4 @@
-<p align="center"><img src="logo.png" width="200" alt="verdant logo: an old tree gentleman with round spectacles, a moss moustache, a leafy crown with linked fruit, and a green suit"></p>
+<p align="center"><img src="logo.png" width="200" alt="verdant logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
 
 # verdant
 
