@@ -2,6 +2,7 @@
 
 # VERDY
 
+[![PyPI](https://img.shields.io/pypi/v/verdy)](https://pypi.org/project/verdy/)
 [![Python package](https://github.com/dobrevajovana/verdy/actions/workflows/python-package.yml/badge.svg)](https://github.com/dobrevajovana/verdy/actions/workflows/python-package.yml)
 
 *Part of **VERDANT**: **V**ocabulary **E**nrichment & **R**esolution of **D**iversity **A**nnotations via **N**eural **T**echnology
@@ -28,8 +29,9 @@ verdy my_input.csv -o natura2000,gold,envo --out my_input.matches.csv
 ## Install
 
 ```
-pip install git+https://github.com/dobrevajovana/verdy.git
-pip install "verdy[excel] @ git+https://github.com/dobrevajovana/verdy.git"    # to read and write Excel
+pip install verdy
+pip install "verdy[excel]"     # to read and write Excel
+pip install git+https://github.com/dobrevajovana/verdy.git    # the latest, unreleased version
 ```
 
 Python 3.10 or newer; the only dependency is `requests`.
