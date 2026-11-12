@@ -128,3 +128,7 @@ pip install -e ".[test]" && python -m pytest -q
 ```
 
 The tests stub every web service, so they run offline.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE).
