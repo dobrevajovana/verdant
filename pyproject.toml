@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "verdy"
-version = "0.1.0"
+version = "0.1.1"
 description = "VERDY: match your own terms (species, habitats, parameters, measurements) to the ontologies you choose: ENVO, NCBITaxon, GBIF, PATO, CF, Wikidata, any OLS4 ontology."
 readme = "README.md"
 requires-python = ">=3.10"

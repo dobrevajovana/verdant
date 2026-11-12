@@ -26,7 +26,7 @@ from verdy.resolve import SAMPLE_FIELDS, resolve
 from verdy.output import save, to_dataframe, to_sssom, to_table
 from verdy.sources import ONTOLOGIES, ontology_info, search
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 predict = match          # the same: IDs or names in, predicted matches out
 
