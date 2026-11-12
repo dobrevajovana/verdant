@@ -1,4 +1,6 @@
-"""verdy: predict matches for your ENA IDs or free-text terms in the ontologies you choose.
+"""VERDY: predict matches for your ENA IDs or free-text terms in the ontologies you choose.
+
+Part of VERDANT: Vocabulary Enrichment & Resolution of Diversity Annotations via Neural Technology.
 
 Input (a CSV / TSV / Excel file, a text file or a Python list) holds ENA IDs (samples,
 runs, projects) and/or free text (species, habitats, parameters, measurements). ENA IDs

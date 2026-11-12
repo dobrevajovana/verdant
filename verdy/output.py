@@ -51,7 +51,7 @@ def to_sssom(matches: list[dict], name: str = "matches") -> str:
         [f"#   {p}: {u}" for p, u in PREFIXES.items() if p in used] + [
         "#   skos: http://www.w3.org/2004/02/skos/core#", "#   semapv: https://w3id.org/semapv/vocab/",
         f"# mapping_set_id: https://w3id.org/verdy/{re.sub(r'[^A-Za-z0-9_.-]+', '-', name)}.sssom.tsv",
-        "# mapping_set_description: Lexical matches found by verdy; not reviewed."]
+        "# mapping_set_description: Lexical matches found by VERDY; not reviewed."]
     fields = ["subject_id", "subject_label", "subject_category", "predicate_id", "object_id", "object_label",
               "mapping_justification", "confidence", "object_source", "mapping_tool", "comment"]
     buf = io.StringIO()

@@ -1,8 +1,11 @@
-<p align="center"><img src="logo.png" width="200" alt="verdy logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
+<p align="center"><img src="logo.png" width="200" alt="VERDY logo: a green forest spirit with a flower crown, braided leafy hair and berry nodes linked by vines"></p>
 
-# verdy
+# VERDY
 
-**Predict matches for your ENA IDs or free-text terms in the ontologies you choose.**
+*Part of **VERDANT**: **V**ocabulary **E**nrichment & **R**esolution of **D**iversity **A**nnotations via **N**eural **T**echnology
+(BioHackathon Europe 2026).*
+
+**Meet VERDY, your warrior for ontology matching.** Give it your ENA IDs or free-text terms, choose the ontologies, and it predicts the matching terms in each.
 
 1. **Input:** a file (or Python list) of ENA IDs and/or free text. The IDs can be samples, runs or projects. The free text can be species, habitats, parameters or measurement names.
 2. **ENA lookup:** each ENA ID is looked up in [ENA](https://www.ebi.ac.uk/ena/portal/api) for its sample's organism and environment fields (`scientific_name`, `broad_scale_environmental_context`, `local_environmental_context`, `environmental_medium`, ...). Free text is used as it is.
@@ -112,7 +115,7 @@ Natura 2000, GOLD, ENVO, NCBITaxon, PATO and CF. It writes [examples/input.match
 ```python
 verdy.search("cloud liquid water content", "cf")    # the source's best terms, best first
 verdy.resolve("SAMD00132352")                      # what ENA says about an ID
-verdy.read_terms("my_input.csv")                    # what verdy read from your file
+verdy.read_terms("my_input.csv")                    # what VERDY read from your file
 verdy.to_dataframe(matches)                         # pandas
 ```
 
